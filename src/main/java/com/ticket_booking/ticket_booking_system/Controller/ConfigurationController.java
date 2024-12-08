@@ -1,42 +1,63 @@
 package com.ticket_booking.ticket_booking_system.Controller;
 
 import com.ticket_booking.ticket_booking_system.Model.Configuration;
-import com.ticket_booking.ticket_booking_system.Task.CustomerTask;
-import com.ticket_booking.ticket_booking_system.Task.VendorTask;
+import com.ticket_booking.ticket_booking_system.Model.Vendor;
+import com.ticket_booking.ticket_booking_system.Repository.TicketRepository;
+import com.ticket_booking.ticket_booking_system.Repository.VendorRepository;
+import com.ticket_booking.ticket_booking_system.Service.TicketPool;
+import com.ticket_booking.ticket_booking_system.Worker.CustomerWorker;
+import com.ticket_booking.ticket_booking_system.Worker.VendorWorker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/configuration")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")  // Allow frontend from localhost:3000
+@RequiredArgsConstructor
 public class ConfigurationController {
 
-    private final VendorTask vendorTask;
-    private final CustomerTask customerTask;
+    private final TicketRepository ticketRepository;
+    private Vendor vendor;
+
+
     private Configuration configuration = new Configuration(); // Temporary storage, can be replaced with DB
 
-    @PostMapping
+    @PostMapping("/api/configuration")
     public String saveConfiguration(@RequestBody Configuration config) {
         this.configuration = config;
 
         // Trigger the simulation
-        return simulateConcurrency();
+        return simulateConcurrency(config);
     }
 
-    private String simulateConcurrency() {
-        // Vendor 1 releasing tickets
-        vendorTask.releaseTickets("Vendor1", configuration.getTotalTickets());
 
-        // Vendor 2 releasing tickets
-        vendorTask.releaseTickets("Vendor2", configuration.getTotalTickets());
+    private String simulateConcurrency(Configuration config) {
+        int totalTickets = config.getTotalTickets();
+        int customers = 2; // Example: Customer threads
+        int ticketsPerCustomer = 5;
+        int vendors = 2; // Example: Vendor threads
+        int ticketsPerVendor = totalTickets / vendors;
+        int releaseInterval = config.getTicketReleaseRate();
+        int customerRetrievalRate = config.getCustomerRetrievalRate();
+        int MaximumCapacity = config.getMaxTicketCapacity();
+        TicketPool ticketPool = new TicketPool();
 
-        // Customer 1 retrieving tickets
-        customerTask.retrieveTickets("Customer1", 5);
+        // Create and start Vendor threads
+        for (int i = 1; i <= vendors; i++) {
+            VendorWorker vendorWorker = new VendorWorker(i, ticketsPerVendor, releaseInterval,  vendor, MaximumCapacity,ticketPool);
+            Thread vendorThread = new Thread(vendorWorker);
+            vendorThread.start();
+        }
 
-        // Customer 2 retrieving tickets
-        customerTask.retrieveTickets("Customer2", 5);
+        // Create and start Customer threads
+        for (int i = 1; i <= customers; i++) {
+            CustomerWorker customerWorker = new CustomerWorker(i, ticketsPerCustomer, customerRetrievalRate, ticketPool);
+            Thread customerThread = new Thread(customerWorker);
+            customerThread.start();
 
-        return "Configuration updated successfully, and simulation started. Check logs for details.";
+
+        }
+            return "Simulation started with the provided configuration! Check logs for details.";
+
     }
+
 }

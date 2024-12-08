@@ -20,6 +20,7 @@ public class Ticket {
     private BigDecimal price;
 
     @ManyToOne
-    @JoinColumn(name = "vendor_id", nullable = false)
+    @JoinColumn(name = "vendor_id", nullable = true)
     private Vendor vendor;
+
 }

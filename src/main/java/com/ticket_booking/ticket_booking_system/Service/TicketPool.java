@@ -1,9 +1,11 @@
 package com.ticket_booking.ticket_booking_system.Service;
 
 import com.ticket_booking.ticket_booking_system.Model.Ticket;
+import com.ticket_booking.ticket_booking_system.Model.Vendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,27 +15,53 @@ import java.util.List;
 public class TicketPool {
 
     private final List<Ticket> ticketList = Collections.synchronizedList(new ArrayList<>());
-    private final int maxCapacity = 100; // Example capacity
 
-    public synchronized void addTicket(Ticket ticket) throws InterruptedException {
-        while (ticketList.size() >= maxCapacity) {
-            System.out.println("Ticket pool is full. Waiting to add tickets...");
-            wait(); // Wait until space is available
+    public synchronized void addTicket(int ticketsToRelease, int maximumCapacity, int vendorId, int releaseInterval, Vendor vendor){
+        for (int i = 0; i < ticketsToRelease; i++) {
+            if (ticketList.size() <= maximumCapacity){
+                try {
+                    Ticket ticket = new Ticket(1, "Spandana" + vendorId, BigDecimal.valueOf(100), vendor);
+                    ticketList.add(ticket);
+                    notifyAll();
+                    System.out.println("Vendor " + vendorId + " released ticket ID: " + ticket.getId());
+                    Thread.sleep(releaseInterval * 1000); // Simulate delay
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.err.println("Vendor " + vendorId + " interrupted.");
+                }
+            }else{
+                System.out.println("Ticket pool is full. Vendor " + vendorId + " is waiting.");
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // Restore the interrupt status
+                    throw new RuntimeException(e);
+                }
+            }
         }
-        ticketList.add(ticket);
-        System.out.println("Ticket added: " + ticket);
-        notifyAll(); // Notify threads waiting to retrieve tickets
+
     }
 
-    public synchronized Ticket removeTicket() throws InterruptedException {
-        while (ticketList.isEmpty()) {
-            System.out.println("Ticket pool is empty. Waiting for tickets...");
-            wait(); // Wait until a ticket is available
+    public synchronized void buyTicket(int ticketsToBuy,int customerId,int retrievalInterval) {
+        for (int i = 0; i < ticketsToBuy; i++) {
+
+            try {
+                if (ticketList.isEmpty()) {
+                    System.out.println("Customer " + customerId + " found no tickets available.");
+                    wait();
+
+                } else {
+                    Ticket ticket = ticketList.remove(0);
+                    System.out.println("Customer " + customerId + " purchased ticket ID: " + ticket);
+                    notifyAll();
+                }
+                Thread.sleep(retrievalInterval * 1000); // Simulate delay
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Customer " + customerId + " interrupted.");
+            }
         }
-        Ticket ticket = ticketList.remove(0);
-        System.out.println("Ticket removed: " + ticket);
-        notifyAll(); // Notify threads waiting to add tickets
-        return ticket;
+
     }
 }
 
