@@ -1,27 +1,34 @@
 package com.ticket_booking.ticket_booking_system.Controller;
 
-import com.ticket_booking.ticket_booking_system.Model.Ticket;
-import com.ticket_booking.ticket_booking_system.Service.TicketService;
+import com.ticket_booking.ticket_booking_system.Model.Configuration;
+import com.ticket_booking.ticket_booking_system.Service.TicketPool;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/api/tickets")
 @RequiredArgsConstructor
+@CrossOrigin
 public class TicketController {
-    private final TicketService ticketService;
+
+    @Autowired
+    private TicketPool ticketPool;// Injected TicketPool
+    private Configuration configuration ;
 
 
-    @PostMapping
-    public ResponseEntity<Ticket> createTicket(@RequestBody Ticket ticket) {
-        return ResponseEntity.ok(ticketService.addTicket(ticket));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Ticket>> getAllTickets() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
+    /**
+     * Endpoint to fetch the count of available tickets.
+     *
+     * @return The count of tickets available in the pool.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Integer> getTicketCount() {
+        int availableTickets = ticketPool.getTicketCount();
+        return ResponseEntity.ok(availableTickets);
     }
 }

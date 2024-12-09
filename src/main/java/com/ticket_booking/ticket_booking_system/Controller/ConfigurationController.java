@@ -8,6 +8,7 @@ import com.ticket_booking.ticket_booking_system.Service.TicketPool;
 import com.ticket_booking.ticket_booking_system.Worker.CustomerWorker;
 import com.ticket_booking.ticket_booking_system.Worker.VendorWorker;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ConfigurationController {
 
-    private final TicketRepository ticketRepository;
     private Vendor vendor;
+    @Autowired
+    private TicketPool ticketPool ;
 
 
     private Configuration configuration = new Configuration(); // Temporary storage, can be replaced with DB
@@ -33,13 +35,13 @@ public class ConfigurationController {
     private String simulateConcurrency(Configuration config) {
         int totalTickets = config.getTotalTickets();
         int customers = 2; // Example: Customer threads
-        int ticketsPerCustomer = 5;
-        int vendors = 2; // Example: Vendor threads
+        int ticketsPerCustomer = 1;
+        int vendors = 4; // Example: Vendor threads
         int ticketsPerVendor = totalTickets / vendors;
         int releaseInterval = config.getTicketReleaseRate();
         int customerRetrievalRate = config.getCustomerRetrievalRate();
         int MaximumCapacity = config.getMaxTicketCapacity();
-        TicketPool ticketPool = new TicketPool();
+
 
         // Create and start Vendor threads
         for (int i = 1; i <= vendors; i++) {
