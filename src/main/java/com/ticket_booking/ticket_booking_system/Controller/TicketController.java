@@ -31,4 +31,14 @@ public class TicketController {
         int availableTickets = ticketPool.getTicketCount();
         return ResponseEntity.ok(availableTickets);
     }
+    // Fetch customer bought ticket count
+    @GetMapping("/bought")
+    public ResponseEntity<Integer> getCustomerBoughtCount() {
+        return ResponseEntity.ok(ticketPool.getCustomerBoughtTicketCount());
+    }
+    // Fetch total ticket count
+    @GetMapping("/total")
+    public ResponseEntity<Integer> getTotalTicketCount() {
+        return ResponseEntity.ok(ticketPool.getTotalTicketCount());
+    }
 }

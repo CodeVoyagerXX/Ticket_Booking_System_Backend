@@ -1,7 +1,6 @@
 package com.ticket_booking.ticket_booking_system.Worker;
 
 import com.ticket_booking.ticket_booking_system.Model.Vendor;
-import com.ticket_booking.ticket_booking_system.Repository.TicketRepository;
 import com.ticket_booking.ticket_booking_system.Service.TicketPool;
 import lombok.AllArgsConstructor;
 
@@ -14,10 +13,11 @@ public class VendorWorker implements Runnable {
     private final Vendor vendor;
     private final int maximumCapacity;
     private TicketPool ticketPool;
+    private final int totalTicket;
 
     @Override
     public void run() {
-        ticketPool.addTicket(ticketsToRelease, maximumCapacity, vendorId, releaseInterval, vendor);
+        ticketPool.addTicket(ticketsToRelease, maximumCapacity, vendorId, releaseInterval, vendor,totalTicket);
     }
 
 }
