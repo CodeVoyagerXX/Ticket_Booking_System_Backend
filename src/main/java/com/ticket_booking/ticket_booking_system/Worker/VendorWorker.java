@@ -14,10 +14,12 @@ public class VendorWorker implements Runnable {
     private final int maximumCapacity;
     private TicketPool ticketPool;
     private final int totalTicket;
+    private final int ticketPrice;
+    private final String eventName;
 
     @Override
     public void run() {
-        ticketPool.addTicket(ticketsToRelease, maximumCapacity, vendorId, releaseInterval, vendor,totalTicket);
+        ticketPool.addTicket(ticketsToRelease, maximumCapacity, vendorId, releaseInterval, vendor,totalTicket,ticketPrice,eventName);
     }
 
 }

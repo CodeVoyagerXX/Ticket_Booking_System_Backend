@@ -46,6 +46,8 @@ public class TicketWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
+        ticketPool.removeSession(session); // Remove session from the pool
         System.out.println("WebSocket session closed: " + session.getId());
     }
+
 }

@@ -10,4 +10,8 @@ public class Configuration {
     private int ticketReleaseRate;
     private int customerRetrievalRate;
     private int maxTicketCapacity;
+    private int numberOfVendors;
+    private int numberOfCustomers;
+    private String eventName;
+    private int ticketPrice;
 }
