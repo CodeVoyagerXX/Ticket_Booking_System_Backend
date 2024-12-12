@@ -27,25 +27,49 @@ public class ConfigurationController {
     public String saveConfiguration(@RequestBody Configuration config) {
         this.configuration = config;
 
-        // Trigger the simulation
-        return simulateConcurrency(config);
+
+        return "Configuration saved!";
+    }
+    @PostMapping("/api/stop-simulation")
+    public String stopSimulation() {
+        ticketPool.setSimulationRunning(false);
+        synchronized (ticketPool) {
+            ticketPool.notifyAll(); // Wake up all threads to check the flag
+        }
+        return "Simulation stopped!";
+    }
+    @PostMapping("/api/start-simulation")
+    public String startSimulation() {
+
+
+        if (configuration == null) {
+            return "Configuration not set. Please configure first.";
+        } else{
+                ticketPool.setSimulationRunning(true);
+                synchronized (ticketPool) {
+                    ticketPool.notifyAll();
+            }
+        }
+        return simulateConcurrency(configuration);
     }
 
 
     private String simulateConcurrency(Configuration config) {
         int totalTickets = config.getTotalTickets();
-        int customers = 2; // Example: Customer threads
-        int ticketsPerCustomer = 1;
-        int vendors = 4; // Example: Vendor threads
+        int customers = config.getNumberOfCustomers(); // Example: Customer threads
+        int ticketsPerCustomer = 5;
+        int vendors = config.getNumberOfVendors(); // Example: Vendor threads
         int ticketsPerVendor = totalTickets / vendors;
         int releaseInterval = config.getTicketReleaseRate();
         int customerRetrievalRate = config.getCustomerRetrievalRate();
         int MaximumCapacity = config.getMaxTicketCapacity();
+        int ticketPrice = config.getTicketPrice();
+        String eventName = config.getEventName();
 
 
         // Create and start Vendor threads
         for (int i = 1; i <= vendors; i++) {
-            VendorWorker vendorWorker = new VendorWorker(i, ticketsPerVendor, releaseInterval,  vendor, MaximumCapacity,ticketPool);
+            VendorWorker vendorWorker = new VendorWorker(i, ticketsPerVendor, releaseInterval,  vendor, MaximumCapacity,ticketPool,totalTickets,ticketPrice,eventName);
             Thread vendorThread = new Thread(vendorWorker);
             vendorThread.start();
         }
@@ -57,9 +81,11 @@ public class ConfigurationController {
             customerThread.start();
 
 
+
         }
             return "Simulation started with the provided configuration! Check logs for details.";
 
     }
+
 
 }
